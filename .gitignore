@@ -367,5 +367,5 @@ FodyWeavers.xsd
 */**/obj/Debug   
 */**/obj/Release   
 */Migrations
-/workshop.wwwapi/appsettings.json
-/workshop.wwwapi/appsettings.Development.json
+/exercise.wwwapi/appsettings.json
+/exercise.wwwapi/appsettings.Development.json
