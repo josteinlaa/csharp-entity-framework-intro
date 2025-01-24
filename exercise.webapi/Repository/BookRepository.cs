@@ -16,13 +16,26 @@ namespace exercise.webapi.Repository
 
         public async Task<Book> AddBook(BookPost post)
         {
-            if (_db.Authors.Find(post.AuthorId) == null) throw new KeyNotFoundException("Author id not valid");
+            post.AuthorIds.ForEach(aid => {
+                if (_db.Authors.Find(aid) == null)
+                {
+                    throw new KeyNotFoundException("Author id not valid");
+                }
+            });
 
             var book = new Book
             {
-                Title = post.Title,
-                AuthorId = post.AuthorId
+                Title = post.Title
             };
+
+            foreach (var authorId in post.AuthorIds)
+            {
+                var author = await _db.Authors.FindAsync(authorId);
+                if (author != null)
+                {
+                    book.Authors.Add(author);
+                }
+            }
 
             await _db.Books.AddAsync(book);
             await _db.SaveChangesAsync();
@@ -31,7 +44,7 @@ namespace exercise.webapi.Repository
         }
         public async Task<bool> DeleteBook(int id)
         {
-            var target = await _db.Books.Include(b => b.Author).FirstOrDefaultAsync(b => b.Id == id) ?? throw new KeyNotFoundException();
+            var target = await _db.Books.Include(b => b.Authors).FirstOrDefaultAsync(b => b.Id == id) ?? throw new KeyNotFoundException();
             if (target == null) return false;
 
             _db.Books.Remove(target);
@@ -41,27 +54,20 @@ namespace exercise.webapi.Repository
 
         public async Task<IEnumerable<Book>> GetAllBooks()
         {
-            return await _db.Books.Include(b => b.Author).ToListAsync();
-
+            return await _db.Books.Include(b => b.Authors).ToListAsync();
         }
 
         public async Task<Book> GetBook(int id)
         {
-            return await _db.Books.Include(b => b.Author).FirstOrDefaultAsync(b => b.Id == id);
+            return await _db.Books.Include(b => b.Authors).FirstOrDefaultAsync(b => b.Id == id) ?? throw new KeyNotFoundException();
         }
 
         public async Task<Book> UpdateBook(int id, BookPut put)
         {
-            var target = await _db.Books.Include(b => b.Author).FirstOrDefaultAsync(b => b.Id == id) ?? throw new KeyNotFoundException();
-            if (put.AuthorId != null && _db.Authors.Find(put.AuthorId) == null) throw new KeyNotFoundException("Author id not valid");
-            
+            var target = await _db.Books.Include(b => b.Authors).FirstOrDefaultAsync(b => b.Id == id) ?? throw new KeyNotFoundException();            
             if (put.Title != null)
             {
                 target.Title = put.Title;
-            }
-            if (put.AuthorId != null)
-            {
-                target.AuthorId = (int)put.AuthorId;
             }
 
             await _db.SaveChangesAsync();

@@ -79,6 +79,7 @@ namespace exercise.webapi.Data
 
         private List<Author> _authors = new List<Author>();
         private List<Book> _books = new List<Book>();
+        private List<BookAuthor> _bookAuthor = new List<BookAuthor>();
 
         public Seeder()
         {
@@ -86,7 +87,7 @@ namespace exercise.webapi.Data
             Random authorRandom = new Random();
             Random bookRandom = new Random();
 
-
+            HashSet<(int BookId, int AuthorId)> bookAuthorSet = new HashSet<(int, int)>();
 
             for (int x = 1; x < 250; x++)
             {
@@ -104,14 +105,24 @@ namespace exercise.webapi.Data
                 Book book = new Book();
                 book.Id = y;
                 book.Title = $"{_firstword[bookRandom.Next(_firstword.Count)]} {_secondword[bookRandom.Next(_secondword.Count)]} {_thirdword[bookRandom.Next(_thirdword.Count)]}";
-                book.AuthorId = _authors[authorRandom.Next(_authors.Count)].Id;
-                //book.Author = authors[book.AuthorId-1];
+
+                int authorCount = authorRandom.Next(1, 5); // Random length list of max 4 authors
+                for (int i = 0; i < authorCount; i++)
+                {
+                    var author = _authors[authorRandom.Next(_authors.Count)];
+                    var bookAuthorEntry = (BookId: book.Id, AuthorId: author.Id);
+                    if (!bookAuthorSet.Contains(bookAuthorEntry))
+                    {
+                        bookAuthorSet.Add(bookAuthorEntry);
+                        _bookAuthor.Add(new BookAuthor { BookId = book.Id, AuthorId = author.Id });
+                    }
+                }
+
                 _books.Add(book);
             }
-
-
         }
         public List<Author> Authors { get { return _authors; } }
         public List<Book> Books { get { return _books; } }
+        public List<BookAuthor> BookAuthor { get { return _bookAuthor; } }
     }
 }

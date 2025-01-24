@@ -85,7 +85,7 @@ namespace exercise.webapi.Endpoints
             return new BookAuthorResponse
             {
                 Title = book.Title,
-                AuthorName = book.Author.FirstName + " " + book.Author.LastName
+                AuthorNames = book.Authors.Select(author => author.FirstName + " " + author.LastName)
             };
         }
     }
